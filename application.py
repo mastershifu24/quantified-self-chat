@@ -1,17 +1,15 @@
 import os
 import streamlit as st
 import pandas as pd
-import google.generativeai as genai
-import base64
+import openai
 
 # Set the environment variable
-os.environ['GOOGLE_API_KEY'] = st.secrets["GOOGLE_API_KEY"]
-
+os.environ['GOOGLE_API_KEY'] = st.secrets["google"]["GOOGLE_API_KEY"]
 
 def configure_model():
     """Configure the generative model."""
-    genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
-    return genai.GenerativeModel('gemini-pro')
+    # Add any necessary configuration for the generative model
+    pass
 
 def load_data(file_path, columns_to_keep):
     """Load and preprocess the data."""
@@ -21,14 +19,14 @@ def load_data(file_path, columns_to_keep):
 
 def get_response(model, user_input, sleep_data):
     """Generate a response from the model."""
-    input_prompt = f"This is user asking : {user_input}\n\n based on what user asked, this is the sleep data: {str(sleep_data)}\n\n Give me short quantified answer in 1 to 5 lines only based on the sleep data: "
-    return model.generate_content(input_prompt).text
+    # Generate the response using the generative model
+    pass
 
 def main():
     """Main function to run the app."""
     st.title('The Quantified Self Chat')
     model = configure_model()
-    columns_to_keep = ['Column1', 'Column2', 'Column3']  # Specify the columns you want to keep
+    columns_to_keep = ['Person ID', 'Gender', 'Age', 'Occupation', 'Nurse ID']  # Specify the columns you want to keep
     sleep_data = load_data('sleep_data.csv', columns_to_keep)
 
     st.subheader('Sleep dataset')
