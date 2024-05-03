@@ -13,13 +13,11 @@ def configure_model():
     genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
     return genai.GenerativeModel('gemini-pro')
 
-def load_data():
+def load_data(file_path, columns_to_keep):
     """Load and preprocess the data."""
-    uploaded_file = st.file_uploader("Choose a CSV file", type='csv')
-    if uploaded_file is not None:
-        df = pd.read_csv(uploaded_file, delimiter=',')
-        df.drop(columns=['Person ID', 'Gender', 'Age', 'Occupation', 'Nurse ID'], inplace=True)
-        return df.to_dict(orient='list')
+    df = pd.read_csv(file_path, delimiter=',')
+    df = df[columns_to_keep]  # Select only the desired columns
+    return df.to_dict(orient='list')
 
 def get_response(model, user_input, sleep_data):
     """Generate a response from the model."""
@@ -30,31 +28,28 @@ def main():
     """Main function to run the app."""
     st.title('The Quantified Self Chat')
     model = configure_model()
-    sleep_data = load_data()
+    columns_to_keep = ['Column1', 'Column2', 'Column3']  # Specify the columns you want to keep
+    sleep_data = load_data('sleep_data.csv', columns_to_keep)
 
-    if sleep_data is not None:
-    
-        st.subheader('Sleep dataset')
-        st.write(pd.DataFrame.from_dict(sleep_data))
+    st.subheader('Sleep dataset')
+    st.write(pd.DataFrame.from_dict(sleep_data))
 
-        # Initialize session state for chat history
-        if 'chat_history' not in st.session_state:
-            st.session_state['chat_history'] = []
+    # Initialize session state for chat history
+    if 'chat_history' not in st.session_state:
+        st.session_state['chat_history'] = []
 
-        user_input = st.text_input("Ask Questions", "")
+    user_input = st.text_input("Ask Questions", "")
 
-        if st.button("Submit"):  # Check if user input is not empty
-            response = get_response(model, user_input, sleep_data)
-            # Update chat history
-            st.session_state['chat_history'].append({"User": user_input, "Gemini Pro": response})
+    if st.button("Submit") and user_input.strip():  # Check if user input is not empty
+        response = get_response(model, user_input, sleep_data)
 
-        # Display chat history
-        for chat in st.session_state['chat_history']:
-            st.write(f"User: {chat['User']}")
-            st.write(f"Gemini Pro: {chat['Gemini Pro']}")
-    
-    else:
-        st.write("Please upload a CSV file to load the sleep data.")
+        # Update chat history
+        st.session_state['chat_history'].append({"User": user_input, "Gemini Pro": response})
+
+    # Display chat history
+    for chat in st.session_state['chat_history']:
+        st.write(f"User: {chat['User']}")
+        st.write(f"Gemini Pro: {chat['Gemini Pro']}")
 
 if __name__ == "__main__":
     main()
